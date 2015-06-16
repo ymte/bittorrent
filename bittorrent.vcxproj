@@ -78,6 +78,7 @@
       <DataExecutionPrevention>false</DataExecutionPrevention>
       <EntryPointSymbol>main</EntryPointSymbol>
       <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <SubSystem>Console</SubSystem>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>

@@ -140,17 +140,6 @@ namespace net {
 	}
 #endif
 
-	// windows hack
-#ifdef _WIN32
-	class _WIN_NET {
-	public:
-		_WIN_NET() {
-			WSADATA windat;
-			WSAStartup(MAKEWORD(2, 2), &windat);
-		}
-	} _win_net;
-#endif
-
 #undef close
 #undef ioctl
 }

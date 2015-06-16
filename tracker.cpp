@@ -30,7 +30,10 @@ int parse_port(char* str) {
 	return res;
 }
 
+void puts(char* txt);
+
 void tracker_start(char* link) {
+	puts(link);
 	// PARSING
 	if (!memcmp(link, "http://", 7))
 		die(); // HTTP_TRACKER_NOT_SUPPORTED

@@ -12,12 +12,19 @@ bool exists(const char* path) {
 		(dwAttrib & FILE_ATTRIBUTE_DIRECTORY));
 }
 
+void puts(char* txt) {
+	int len = 0;
+	while (txt[len])
+		len++;
+	WriteConsole(GetStdHandle(STD_OUTPUT_HANDLE), txt, len, 0, 0);
+	WriteConsole(GetStdHandle(STD_OUTPUT_HANDLE), "\n", 1, 0, 0);
+}
 
 unsigned long net_resolve(char* host) {
 	// hints
 	addrinfo hints = { 0, AF_INET, SOCK_STREAM, 0, 0, 0, 0, 0 };
 
-	addrinfo* result;
+	addrinfo* result = 0;
 
 	// i cri everytiem
 	getaddrinfo(host, 0, &hints, &result);
@@ -27,7 +34,7 @@ unsigned long net_resolve(char* host) {
 	return ip;
 }
 
-const int MAX_FIBERS = 0x100;
+const int MAX_FIBERS = 0x1000;
 
 // fiber stuff
 typedef void* fiber;
@@ -49,6 +56,11 @@ fiber pending[MAX_FIBERS];
 int numpending;
 
 void init() {
+	// net
+	WSADATA windat;
+	WSAStartup(MAKEWORD(2, 2), &windat);
+
+	// coros
 	main = ConvertThreadToFiber(0);
 	current = main;
 	numdead = 0;
@@ -66,7 +78,13 @@ void cleanup() {
 	numpending = 0;
 }
 
+void rest() {
+	dead[numdead++] = current;
+	SwitchToFiber(main);
+}
+
 void die() {
+	puts("trimming fat...");
 	dead[numdead++] = current;
 	SwitchToFiber(main);
 }
@@ -114,21 +132,23 @@ bool runpending() {
 
 struct info {
 	proc p;
+	fiber f;
 	void* arg;
 };
 
 void fiberproc(info* i) {
 	info i2 = *i;
-	SwitchToFiber(main);
+	SwitchToFiber(i2.f);
 	i2.p(i2.arg);
-	die();
+	rest();
 }
 
 void run(proc p, void* arg) {
 	info i;
 	i.p = p;
+	i.f = current;
 	i.arg = arg;
-	fiber f = CreateFiber(0x1000, (LPFIBER_START_ROUTINE)fiberproc, &i);
+	fiber f = CreateFiber(0x10000, (LPFIBER_START_ROUTINE)fiberproc, &i);
 	SwitchToFiber(f); // it will return immediately
 	pending[numpending++] = f;
 }
@@ -183,4 +203,90 @@ void poll() {
 			}
 		}
 	}
+}
+
+PCHAR*
+CommandLineToArgvA(
+PCHAR CmdLine,
+int* _argc
+)
+{
+	PCHAR* argv;
+	PCHAR  _argv;
+	ULONG   len;
+	ULONG   argc;
+	CHAR   a;
+	ULONG   i, j;
+
+	BOOLEAN  in_QM;
+	BOOLEAN  in_TEXT;
+	BOOLEAN  in_SPACE;
+
+	len = strlen(CmdLine);
+	i = ((len + 2) / 2)*sizeof(PVOID)+sizeof(PVOID);
+
+	argv = (PCHAR*)GlobalAlloc(GMEM_FIXED,
+		i + (len + 2)*sizeof(CHAR));
+
+	_argv = (PCHAR)(((PUCHAR)argv) + i);
+
+	argc = 0;
+	argv[argc] = _argv;
+	in_QM = FALSE;
+	in_TEXT = FALSE;
+	in_SPACE = TRUE;
+	i = 0;
+	j = 0;
+
+	while (a = CmdLine[i]) {
+		if (in_QM) {
+			if (a == '\"') {
+				in_QM = FALSE;
+			}
+			else {
+				_argv[j] = a;
+				j++;
+			}
+		}
+		else {
+			switch (a) {
+			case '\"':
+				in_QM = TRUE;
+				in_TEXT = TRUE;
+				if (in_SPACE) {
+					argv[argc] = _argv + j;
+					argc++;
+				}
+				in_SPACE = FALSE;
+				break;
+			case ' ':
+			case '\t':
+			case '\n':
+			case '\r':
+				if (in_TEXT) {
+					_argv[j] = '\0';
+					j++;
+				}
+				in_TEXT = FALSE;
+				in_SPACE = TRUE;
+				break;
+			default:
+				in_TEXT = TRUE;
+				if (in_SPACE) {
+					argv[argc] = _argv + j;
+					argc++;
+				}
+				_argv[j] = a;
+				j++;
+				in_SPACE = FALSE;
+				break;
+			}
+		}
+		i++;
+	}
+	_argv[j] = '\0';
+	argv[argc] = NULL;
+
+	(*_argc) = argc;
+	return argv;
 }

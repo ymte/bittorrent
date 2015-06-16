@@ -31,7 +31,7 @@ struct connectrequest {
 	}
 
 	inline void hton() {
-		connection = htonll(connection);
+		//connection = htonll(connection);
 		action = htonl(action);
 		transaction = htonl(transaction);
 	}
@@ -45,7 +45,7 @@ struct connectresponse {
 	inline void hton() {
 		action = htonl(action);
 		transaction = htonl(transaction);
-		connection = htonll(connection);
+		//connection = htonll(connection);
 	}
 };
 

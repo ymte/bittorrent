@@ -3,6 +3,8 @@
 #include "tracker.h"
 #include "coro.h"
 
+void puts(char* txt);
+
 void bt_from_torrent(char* str) {
 
 }
@@ -67,6 +69,9 @@ void bt_from_magnet(char* str) {
 				break;
 			if (*str == '&')
 				*str++ = 0;
+
+			// print
+			puts(name);
 		}
 
 		// EXACT TOPIC
@@ -101,19 +106,37 @@ void bt_from_magnet(char* str) {
 			char* tracker = str;
 			str = url_decode_inplace(str);
 
+			run((proc)tracker_start, tracker);
+
 			// common code
 			if (*str == 0)
 				break;
 			if (*str == '&')
 				*str++ = 0;
-
-			tracker_start(tracker);
 		}
 	}
 }
 
-int main(int argc, char** argv) {
+#include <Windows.h>
+
+PCHAR*
+CommandLineToArgvA(
+PCHAR CmdLine,
+int* _argc
+);
+
+int main() {
+	int argc;
+	char** argv;
+
+	char* cmd = GetCommandLine();
+	argv = CommandLineToArgvA(cmd, &argc);
+
 	init();
+	if (argc == 1) {
+		puts("Please provide a torrent or magnet link as argument.");
+		return 0;
+	}
 
 	for (int i = 1; i < argc && argv[i]; i++) {
 		if (exists(argv[i]))
