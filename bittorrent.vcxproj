@@ -55,18 +55,18 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <Optimization>Disabled</Optimization>
+      <Optimization>Full</Optimization>
       <FunctionLevelLinking>false</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>false</SDLCheck>
       <CallingConvention>StdCall</CallingConvention>
       <ExceptionHandling>false</ExceptionHandling>
-      <OmitFramePointers>false</OmitFramePointers>
+      <OmitFramePointers>true</OmitFramePointers>
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <PreprocessorDefinitions>%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BufferSecurityCheck>false</BufferSecurityCheck>
-      <WholeProgramOptimization>false</WholeProgramOptimization>
+      <WholeProgramOptimization>true</WholeProgramOptimization>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>

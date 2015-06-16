@@ -34,6 +34,7 @@ void puts(char* txt);
 
 void tracker_start(char* link) {
 	puts(link);
+
 	// PARSING
 	if (!memcmp(link, "http://", 7))
 		die(); // HTTP_TRACKER_NOT_SUPPORTED
@@ -59,8 +60,9 @@ void tracker_start(char* link) {
 
 	net::udpsocket sock;
 
+	// 1. connect
 	connectrequest req;
-	req.transaction = 0x19483923;
+	req.transaction = GetTickCount64();
 	req.hton();
 	int len1 = sock.sendto(ip, port, &req, sizeof(req));
 	int i = WSAGetLastError();
@@ -69,5 +71,9 @@ void tracker_start(char* link) {
 	int len2 = sock.recv(&resp, sizeof(resp));
 	int j = WSAGetLastError();
 	resp.hton();
-	resp.action++;
+
+	puts("connected");
+
+	// 2. announce
+	announcerequest areq;
 }

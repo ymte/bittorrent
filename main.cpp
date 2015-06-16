@@ -134,7 +134,7 @@ int main() {
 
 	init();
 	if (argc == 1) {
-		puts("Please provide a torrent or magnet link as argument.");
+		puts("Please provide a torrent or magnet link.");
 		return 0;
 	}
 

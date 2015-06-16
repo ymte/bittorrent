@@ -12,6 +12,15 @@ typedef unsigned long uint32;
 typedef unsigned short uint16;
 typedef unsigned char uint8;
 
+uint64 htonll2(uint64 n) {
+	uint32 high = (n & 0xFFFFFFFF00000000ULL) >> 32;
+	uint32 low = n & 0xFFFFFFFFU;
+	uint64 res = htonl(low);
+	res <<= 32;
+	res |= htonl(high);
+	return res;
+}
+
 // peer
 struct BTPeer {
 	uint32 ip;
@@ -25,13 +34,12 @@ struct connectrequest {
 	uint32 transaction;
 
 	inline connectrequest() {
-		//connection = htonll(0x41727101980ULL);
-		connection = 0x801910271704ULL;
+		connection = 0x41727101980ULL;
 		action = 0;
 	}
 
 	inline void hton() {
-		//connection = htonll(connection);
+		connection = htonll2(connection);
 		action = htonl(action);
 		transaction = htonl(transaction);
 	}
@@ -45,7 +53,7 @@ struct connectresponse {
 	inline void hton() {
 		action = htonl(action);
 		transaction = htonl(transaction);
-		//connection = htonll(connection);
+		connection = htonll2(connection);
 	}
 };
 
